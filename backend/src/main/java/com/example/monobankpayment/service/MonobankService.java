@@ -1,13 +1,15 @@
 package com.example.monobankpayment.service;
 
 import com.example.monobankpayment.config.MonobankConfig;
-import com.example.monobankpayment.controller.dto.handlewebhook.WebhookRequest;
+import com.example.monobankpayment.controller.dto.handlewebhook.WebhookEvent;
 import com.example.monobankpayment.controller.dto.preparepayment.PreparePaymentRequest;
 import com.example.monobankpayment.controller.dto.preparepayment.PreparePaymentResponse;
 import com.example.monobankpayment.utils.MonobankPublicKeyProvider;
 import com.example.monobankpayment.utils.MonobankSignUtil;
+import com.example.monobankpayment.utils.MonobankWebhookValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -20,6 +22,9 @@ public class MonobankService {
     private final MonobankConfig config;
     private final MonobankSignUtil sign;
     private final MonobankPublicKeyProvider publicKeyProvider;
+    private final MonobankWebhookValidator webhookValidator;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
 
     public PreparePaymentResponse preparePayment(PreparePaymentRequest request) {
@@ -41,8 +46,17 @@ public class MonobankService {
         );
     }
 
-    public void handleWebhook(WebhookRequest request) {
+    public void handleWebhook(String signature, byte[] rawBody) {
 
+        webhookValidator.validate(
+                rawBody,
+                signature,
+                publicKeyProvider.provide()
+        );
+
+        WebhookEvent webhook = objectMapper.readValue(rawBody, WebhookEvent.class);
+
+        // Future handle logic
     }
 
     private String generateBase64Payload(String orderId, String description) {
