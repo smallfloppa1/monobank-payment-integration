@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: monobank-payment
+
+monobank:
+  x-token: ${MONOBANK_X_TOKEN}
+  public-key-base64: ${MONOBANK_PUBLIC_KEY_BASE64}
+  key-id: ${MONOBANK_KEY_ID}
+
